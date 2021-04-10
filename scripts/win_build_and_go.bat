@@ -15,7 +15,7 @@ rem set COMPILER_FLAGS=%COMPILER_FLAGS% -MT -O2 -Z7
 
 set LINKER_FLAGS=-incremental:no -opt:ref
 
-cl %COMPILER_FLAGS% -I "../../include/" -I "../../external/utest.h/" "../../src/lifetime.c" "../../test/utest.c" "../../test/utest_lifetime.c" -link %LINKER_FLAGS%
+cl %COMPILER_FLAGS% -I "../../include/" -I "../../external/utest.h/" "../../src/lifetime.c" "../../src/components.c" "../../test/utest.c" "../../test/utest_lifetime.c" "../../test/utest_components.c" -link %LINKER_FLAGS%
 
 if [%ERRORLEVEL%] EQU [0] %EXE_NAME%.exe
 
