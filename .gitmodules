@@ -1,0 +1,6 @@
+[submodule "external/utest.h"]
+	path = external/utest.h
+	url = https://github.com/sheredom/utest.h.git
+[submodule "external/ubench.h"]
+	path = external/ubench.h
+	url = https://github.com/sheredom/ubench.h.git
