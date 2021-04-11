@@ -8,6 +8,7 @@ chunky_create()
 {
         struct chunky_ctx *ctx = malloc(sizeof(struct chunky_ctx));
         memset(ctx, 0, sizeof(*ctx));
+
         return ctx;
 }
 

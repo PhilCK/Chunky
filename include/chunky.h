@@ -20,7 +20,21 @@ chunky_create();
 
 int
 chunky_destroy(
-        struct chunky_ctx **ctx);                   /* requierd */
+        struct chunky_ctx **ctx);                   /* required */
+
+/* -------------------------------------------------------------------------- */
+/* Entities
+ */
+
+uintptr_t
+chunky_entity_create(
+        struct chunky_ctx *ctx,                     /* required */
+        uint64_t components);
+
+int
+chunky_entity_destroy(
+        struct chunky_ctx *ctx,                     /* required */
+        uintptr_t entity);                          /* required */
 
 /* -------------------------------------------------------------------------- */
 /* Components
@@ -33,14 +47,14 @@ struct chunky_component_desc {
 
 int
 chunky_components_create(
-        struct chunky_ctx *ctx,                     /* requierd */
-        const struct chunky_component_desc *desc,   /* requierd */
-        int desc_count,                             /* requierd */
-        uint64_t *out_component_ids);               /* requierd */
+        struct chunky_ctx *ctx,                     /* required */
+        const struct chunky_component_desc *desc,   /* required */
+        int desc_count,                             /* required */
+        uint64_t *out_component_ids);               /* required */
 
 size_t
 chunky_components_count(
-        const struct chunky_ctx *ctx);              /* requierd */
+        const struct chunky_ctx *ctx);              /* required */
 
 /* -------------------------------------------------------------------------- */
 
