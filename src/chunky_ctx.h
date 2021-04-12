@@ -27,6 +27,21 @@
 /* Context Data
  */
 
+struct chunk_info {
+        uint64_t layout;
+};
+
+struct chunk_block {
+        struct chunky_chunk_header header;
+        uint8_t data[16384 - sizeof(struct chunky_chunk_header)];
+};
+
+struct chunk_layout {
+        uint64_t bit_pattern;
+        uint16_t deltas[64];
+        uint8_t strides[64];
+};
+
 struct chunky_entity {
         size_t idx;
         char name[32];
@@ -39,11 +54,19 @@ struct chunky_component {
 };
 
 struct chunky_ctx {
+        struct chunk_info info[CHUNKY_MAX_CHUNKS];
+        struct chunk_block block[CHUNKY_MAX_CHUNKS];
+
+        struct chunk_layout layouts[64];
+        int layout_count;
+
         uint8_t entity_state[CHUNKY_MAX_ENTITIES];
         struct chunky_entity entities[CHUNKY_MAX_ENTITIES];
 
         struct chunky_component comps[CHUNKY_MAX_COMPONENTS];
         int comp_count;
 };
+
+/* -------------------------------------------------------------------------- */
 
 #endif

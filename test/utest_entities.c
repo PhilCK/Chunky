@@ -1,6 +1,5 @@
 #include <utest.h>
 #include <chunky.h>
-#include "../src/chunky_ctx.h" /* peek at the state */
 #include <string.h>
 
 struct entity_test_fixture {
@@ -8,11 +7,14 @@ struct entity_test_fixture {
 };
 
 UTEST_F_SETUP(entity_test_fixture) {
+
+        /* Create a chunky ctx
+         */
+
         struct chunky_ctx *ch_ctx = 0;
         ch_ctx = chunky_create();
 
         ASSERT_TRUE(ch_ctx != 0);
-
         utest_fixture->ctx = ch_ctx;
 }
 

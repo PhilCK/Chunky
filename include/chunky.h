@@ -20,7 +20,7 @@ chunky_create();
 
 int
 chunky_destroy(
-        struct chunky_ctx **ctx);                   /* required */
+        struct chunky_ctx **ctx);                       /* required */
 
 /* -------------------------------------------------------------------------- */
 /* Entities
@@ -28,13 +28,13 @@ chunky_destroy(
 
 uintptr_t
 chunky_entity_create(
-        struct chunky_ctx *ctx,                     /* required */
+        struct chunky_ctx *ctx,                         /* required */
         uint64_t components);
 
 int
 chunky_entity_destroy(
-        struct chunky_ctx *ctx,                     /* required */
-        uintptr_t entity);                          /* required */
+        struct chunky_ctx *ctx,                         /* required */
+        uintptr_t entity);                              /* required */
 
 /* -------------------------------------------------------------------------- */
 /* Components
@@ -47,14 +47,32 @@ struct chunky_component_desc {
 
 int
 chunky_components_create(
-        struct chunky_ctx *ctx,                     /* required */
-        const struct chunky_component_desc *desc,   /* required */
-        int desc_count,                             /* required */
-        uint64_t *out_component_ids);               /* required */
+        struct chunky_ctx *ctx,                         /* required */
+        const struct chunky_component_desc *desc,       /* required */
+        int desc_count,                                 /* required */
+        uint64_t *out_component_ids);                   /* required */
 
 size_t
 chunky_components_count(
-        const struct chunky_ctx *ctx);              /* required */
+        const struct chunky_ctx *ctx);                  /* required */
+
+/* -------------------------------------------------------------------------- */
+/* Chunks
+ */
+
+struct chunky_chunk_header {
+        uint32_t count;
+        uint32_t capacity;
+        uint8_t strides[64];
+        uintptr_t components[64];
+};
+
+int
+chunky_find_chunks(
+        struct chunky_ctx *ctx,                         /* required */
+        uint64_t components,                            /* required */
+        struct chunky_chunk_header **out_headers,       /* optional */
+        size_t *count);                                 /* required */
 
 /* -------------------------------------------------------------------------- */
 
