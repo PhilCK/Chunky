@@ -4,6 +4,9 @@ Chunky is a minimal ECS system. It supports 64 components max, doesn't
 really support the systems part you have to bring that, and you also need to
 handle things like multi-threading.
 
+The main motivation for this was to see what an interface would turn out like
+using bitmasks to identify the components for an entity or system.
+
 ## Development Environment
 
 There isn't anything special going on here, you just need to compile the source
@@ -17,3 +20,12 @@ git submodule update --init --recursive
 cd scripts
 ./win_build_and_go.bat
 ```
+
+## Thirdparty
+
+The thirdparty is used in development and testing. It does not ship with Chunky.
+
+Library | URL                                  | Author
+--------|--------------------------------------|-----------------------------
+UTest   | https://github.com/sheredom/utest.h  | https://twitter.com/sheredom
+UBench  | https://github.com/sheredom/ubench.h | https://twitter.com/sheredom
