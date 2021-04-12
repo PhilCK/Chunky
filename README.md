@@ -7,6 +7,12 @@ handle things like multi-threading.
 The main motivation for this was to see what an interface would turn out like
 using bitmasks to identify the components for an entity or system.
 
+## Status
+
+Currently porting a really bad prototype I made for this accross. There are alot
+of hard edges that I want to smooth out, but atm its 'get it working' kinda
+thing, so very unstable atm.
+
 ## Development Environment
 
 There isn't anything special going on here, you just need to compile the source
