@@ -8,8 +8,16 @@
 extern "C" {
 #endif
 
+/* -------------------------------------------------------------------------- */
+/* Opaque Types and Other Bits
+ */
+
 struct chunky_ctx;
 struct chunky_recorder;
+
+#define CHUNKY_MAJOR_VER 0
+#define CHUNKY_MINOR_VER 0
+#define CHUNKY_PATCH_VER 0
 
 /* -------------------------------------------------------------------------- */
 /* Lifetime
@@ -57,10 +65,10 @@ chunky_components_count(
         const struct chunky_ctx *ctx);                  /* required */
 
 /* -------------------------------------------------------------------------- */
-/* Chunks
+/* Blocks
  */
 
-struct chunky_chunk_header {
+struct chunky_block_header {
         uint32_t count;
         uint32_t capacity;
         uint8_t strides[64];
@@ -68,11 +76,17 @@ struct chunky_chunk_header {
 };
 
 int
-chunky_find_chunks(
+chunky_find_blocks(
         struct chunky_ctx *ctx,                         /* required */
         uint64_t components,                            /* required */
-        struct chunky_chunk_header **out_headers,       /* optional */
+        struct chunky_block_header **out_headers,       /* optional */
         size_t *count);                                 /* required */
+
+void *
+chunky_block_data(
+        struct chunky_ctx *ctx,                         /* required */
+        struct chunky_block_header *header,             /* required */
+        uint64_t component);
 
 /* -------------------------------------------------------------------------- */
 

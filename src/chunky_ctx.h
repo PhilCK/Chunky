@@ -12,16 +12,41 @@
 #define CHUNKY_MAX_ENTITIES 128
 #endif
 
-#ifndef CHUNKY_MAX_CHUNKS
-#define CHUNKY_MAX_CHUNKS 32
+#ifndef CHUNKY_MAX_BLOCKS
+#define CHUNKY_MAX_BLOCKS 32
 #endif
 
 /* -------------------------------------------------------------------------- */
-/* Helpers
+/* Helpers and Constants
  */
 
 #define CHUNKY_MAX_COMPONENTS 64
-#define CHUNKY_IS_POW2(i) ((i != 0) && ((i & (i - 1)) == 0))
+
+/* We could remove the zero check as we don't really need it. As entities take
+ * the inital slot.
+ */
+static int
+ispow2(uint64_t i) {
+	return ((i != 0) && ((i & (i - 1)) == 0));
+}
+
+/* Since components are powers of two we need to convert them to an index.
+ * The general solution to this is (int)log2(n), you could also use a clz
+ * implementation. We are doing just a for loop until we have benchmarking.
+ * unrolling this could also be an option.
+ */
+static int
+id2idx(uint64_t id) {
+        for(uint64_t i = 0; i < 64; ++i) {
+        	uint64_t j = 1ULL << i;
+
+        	if(id == j) {
+        		return (int)i;
+        	}
+        }
+
+        return 0;
+}
 
 /* -------------------------------------------------------------------------- */
 /* Context Data
@@ -32,8 +57,8 @@ struct chunk_info {
 };
 
 struct chunk_block {
-        struct chunky_chunk_header header;
-        uint8_t data[16384 - sizeof(struct chunky_chunk_header)];
+        struct chunky_block_header header;
+        uint8_t data[16384 - sizeof(struct chunky_block_header)];
 };
 
 struct chunk_layout {
@@ -54,8 +79,8 @@ struct chunky_component {
 };
 
 struct chunky_ctx {
-        struct chunk_info info[CHUNKY_MAX_CHUNKS];
-        struct chunk_block block[CHUNKY_MAX_CHUNKS];
+        struct chunk_info info[CHUNKY_MAX_BLOCKS];
+        struct chunk_block block[CHUNKY_MAX_BLOCKS];
 
         struct chunk_layout layouts[64];
         int layout_count;
@@ -66,6 +91,21 @@ struct chunky_ctx {
         struct chunky_component comps[CHUNKY_MAX_COMPONENTS];
         int comp_count;
 };
+
+/* -------------------------------------------------------------------------- */
+/* Internal API Calls
+ */
+
+int
+chunky_block_insert_slot(
+        struct chunky_ctx *ctx,
+        uint64_t layout,
+        uintptr_t entity_id,
+        uint8_t *component_strides,
+        uint16_t *component_offsets,
+        uintptr_t *out_block,int *out_slot);
+
+
 
 /* -------------------------------------------------------------------------- */
 

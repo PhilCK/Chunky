@@ -21,12 +21,12 @@ cl %COMPILER_FLAGS% ^
  "../../src/lifetime.c"^
  "../../src/entities.c"^
  "../../src/components.c"^
- "../../src/chunks.c"^
+ "../../src/blocks.c"^
  "../../test/utest.c"^
  "../../test/utest_lifetime.c"^
  "../../test/utest_components.c"^
  "../../test/utest_entities.c"^
- "../../test/utest_chunks.c"^
+ "../../test/utest_blocks.c"^
  -link %LINKER_FLAGS%
 
 if [%ERRORLEVEL%] EQU [0] %EXE_NAME%.exe

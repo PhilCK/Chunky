@@ -3,7 +3,7 @@
 #include "../src/chunky_ctx.h" /* peek at the state */
 #include <string.h>
 
-struct chunk_test_fixture {
+struct block {
         struct chunky_ctx *ctx;
 
         uint64_t tform_compid;
@@ -11,7 +11,7 @@ struct chunk_test_fixture {
         uint64_t renderable_compid;
 };
 
-UTEST_F_SETUP(chunk_test_fixture) {
+UTEST_F_SETUP(block) {
 
         /* Create a chunky ctx.
          */
@@ -55,7 +55,7 @@ UTEST_F_SETUP(chunk_test_fixture) {
         ASSERT_TRUE(ok > 0);
 }
 
-UTEST_F_TEARDOWN(chunk_test_fixture) {
+UTEST_F_TEARDOWN(block) {
         /* Pull down the Chunky context
          */
 
@@ -67,19 +67,65 @@ UTEST_F_TEARDOWN(chunk_test_fixture) {
         ASSERT_TRUE(ch_ctx == 0);
 }
 
-UTEST_F(chunk_test_fixture, get_empty_chunks) {
+UTEST_F(block, access_component_data) {
+        size_t count = 0;
+
+        /* Create an entity
+         * With a some components, we should be able to find the chunk of this
+         * entity, by matching the components.
+         */
+
+        uintptr_t ent = chunky_entity_create(
+                utest_fixture->ctx, 
+                utest_fixture->tform_compid | utest_fixture->bounds_compid);
+
+        int ok = chunky_find_blocks(
+                utest_fixture->ctx,
+                utest_fixture->tform_compid | utest_fixture->bounds_compid,
+                NULL,
+                &count);
+
+        /* We should be able to get the chunk header that this array landed in.
+         */
+
+        ASSERT_TRUE(count == 1);
+
+        struct chunky_block_header *headers[1] = {0};
+
+        ok = chunky_find_blocks(
+                utest_fixture->ctx,
+                utest_fixture->tform_compid | utest_fixture->bounds_compid,
+                headers,
+                &count);
+
+        /* Now we have the chunk, we should be able to access and write to a
+         * components data.
+         */
+
+        for(int i = 0; i < count; ++i) {
+                void *tform = NULL;
+                tform = chunky_block_data(
+                    utest_fixture->ctx,
+                    headers[0],
+                    utest_fixture->bounds_compid);
+
+                //ASSERT_TRUE(tform != NULL);
+        };
+}
+
+UTEST_F(block, get_empty_blocks) {
         size_t count = 0;
 
         /* Create an entity this should not appear in a chunk
          */
-        
+
         uintptr_t ent = chunky_entity_create(utest_fixture->ctx, 0);
 
         /* Find chunks with these components
          * We should get nothing, because the above entity has no components.
          */
 
-        int ok = chunky_find_chunks(
+        int ok = chunky_find_blocks(
                 utest_fixture->ctx,
                 utest_fixture->tform_compid | utest_fixture->bounds_compid,
                 NULL,
@@ -92,9 +138,9 @@ UTEST_F(chunk_test_fixture, get_empty_chunks) {
          * This is just to ensure this works, it should contain nothing.
          */
 
-        struct chunky_chunk_header *headers[3] = {0};
+        struct chunky_block_header *headers[3] = {0};
 
-        ok = chunky_find_chunks(
+        ok = chunky_find_blocks(
                 utest_fixture->ctx,
                 utest_fixture->tform_compid | utest_fixture->bounds_compid,
                 headers,
@@ -104,7 +150,7 @@ UTEST_F(chunk_test_fixture, get_empty_chunks) {
         ASSERT_TRUE(count == 0);
 }
 
-UTEST_F(chunk_test_fixture, get_chunk) {
+UTEST_F(block, get_block) {
         size_t count = 0;
 
         /* Create an entity
@@ -116,7 +162,7 @@ UTEST_F(chunk_test_fixture, get_chunk) {
                 utest_fixture->ctx, 
                 utest_fixture->tform_compid | utest_fixture->bounds_compid);
 
-        int ok = chunky_find_chunks(
+        int ok = chunky_find_blocks(
                 utest_fixture->ctx,
                 utest_fixture->tform_compid | utest_fixture->bounds_compid,
                 NULL,
@@ -128,9 +174,9 @@ UTEST_F(chunk_test_fixture, get_chunk) {
         /* We should be able to get the chunk header that this array landed in.
          */
 
-        struct chunky_chunk_header *headers[3] = {0};
+        struct chunky_block_header *headers[3] = {0};
 
-        ok = chunky_find_chunks(
+        ok = chunky_find_blocks(
                 utest_fixture->ctx,
                 utest_fixture->tform_compid | utest_fixture->bounds_compid,
                 headers,
@@ -140,7 +186,7 @@ UTEST_F(chunk_test_fixture, get_chunk) {
         ASSERT_TRUE(count == 1);
 }
 
-UTEST_F(chunk_test_fixture, get_chunk_with_subset) {
+UTEST_F(block, get_block_with_subset) {
         size_t count = 0;
 
         /* Create an entity
@@ -153,7 +199,7 @@ UTEST_F(chunk_test_fixture, get_chunk_with_subset) {
                 utest_fixture->ctx, 
                 utest_fixture->tform_compid | utest_fixture->bounds_compid | utest_fixture->renderable_compid);
 
-        int ok = chunky_find_chunks(
+        int ok = chunky_find_blocks(
                 utest_fixture->ctx,
                 utest_fixture->tform_compid | utest_fixture->bounds_compid,
                 NULL,
@@ -165,9 +211,9 @@ UTEST_F(chunk_test_fixture, get_chunk_with_subset) {
         /* We should be able to get the chunk header that this array landed in.
          */
 
-        struct chunky_chunk_header *headers[3] = {0};
+        struct chunky_block_header *headers[3] = {0};
 
-        ok = chunky_find_chunks(
+        ok = chunky_find_blocks(
                 utest_fixture->ctx,
                 utest_fixture->tform_compid | utest_fixture->bounds_compid,
                 headers,
@@ -177,7 +223,7 @@ UTEST_F(chunk_test_fixture, get_chunk_with_subset) {
         ASSERT_TRUE(count == 1);
 }
 
-UTEST_F(chunk_test_fixture, get_no_chunk_from_wrong_types) {
+UTEST_F(block, get_no_block_from_wrong_types) {
         size_t count = 0;
 
         /* Create an entity
@@ -189,7 +235,7 @@ UTEST_F(chunk_test_fixture, get_no_chunk_from_wrong_types) {
                 utest_fixture->ctx, 
                 utest_fixture->tform_compid | utest_fixture->bounds_compid);
 
-        int ok = chunky_find_chunks(
+        int ok = chunky_find_blocks(
                 utest_fixture->ctx,
                 utest_fixture->renderable_compid,
                 NULL,

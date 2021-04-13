@@ -51,7 +51,7 @@ UTEST_F(component_test_fixture, single_reg) {
         ASSERT_TRUE(is_pow2(id));
         ASSERT_TRUE(chunky_components_count(utest_fixture->ctx) == 1);
 
-        /* Check internal state is correct
+        /* Check internal state is correct.
          */
 
         ASSERT_TRUE(utest_fixture->ctx->comps[0].bytes == desc.bytes);
