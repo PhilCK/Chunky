@@ -1,2 +1,6 @@
-# Build dir
+# Build Dir
 /scripts/bin
+
+# OS Files
+*.DS_Store
+
