@@ -4,3 +4,6 @@
 [submodule "external/utest.h"]
 	path = external/utest.h
 	url = https://github.com/sheredom/utest.h.git
+[submodule "external/cimgui-sokol-starterkit"]
+	path = external/cimgui-sokol-starterkit
+	url = https://github.com/floooh/cimgui-sokol-starterkit.git
