@@ -109,7 +109,7 @@ UTEST_F(block, access_component_data) {
                     headers[0],
                     utest_fixture->bounds_compid);
 
-                //ASSERT_TRUE(tform != NULL);
+                ASSERT_TRUE(tform != NULL);
         };
 }
 

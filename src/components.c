@@ -36,10 +36,11 @@ chunky_components_create(
                  */
                 assert(cd->bytes && "Cannot have zero sized components");
 
-                ctx->comps[ctx->comp_count].bytes = cd->bytes;
+                cd_dst->bytes = cd->bytes;
+                cd_dst->bit = 1ULL << ctx->comp_count;
                 (void)strncpy(cd_dst->name, cd->name, sizeof(cd_dst->name));
 
-                out_component_ids[i] = 1ULL << ctx->comp_count;
+                out_component_ids[i] = cd_dst->bit;
                 ctx->comp_count += 1;
         }
 

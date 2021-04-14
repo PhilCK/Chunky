@@ -3,6 +3,7 @@
 
 #include <stdint.h>
 #include <stddef.h>
+#include <chunky.h>
 
 /* -------------------------------------------------------------------------- */
 /* Config
@@ -19,8 +20,6 @@
 /* -------------------------------------------------------------------------- */
 /* Helpers and Constants
  */
-
-#define CHUNKY_MAX_COMPONENTS 64
 
 /* We could remove the zero check as we don't really need it. As entities take
  * the inital slot.
@@ -76,6 +75,7 @@ struct chunky_entity {
 struct chunky_component {
         char name[32];
         size_t bytes;
+        uint64_t bit;
 };
 
 struct chunky_ctx {
@@ -101,9 +101,8 @@ chunky_block_insert_slot(
         struct chunky_ctx *ctx,
         uint64_t layout,
         uintptr_t entity_id,
-        uint8_t *component_strides,
-        uint16_t *component_offsets,
-        uintptr_t *out_block,int *out_slot);
+        uintptr_t *out_block,
+        int *out_slot);
 
 
 

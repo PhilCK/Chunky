@@ -85,14 +85,12 @@ chunky_block_insert_slot(
         struct chunky_ctx *ctx,
         uint64_t layout,
         uintptr_t entity_id,
-        uint8_t *component_strides,
-        uint16_t *component_offsets,
         uintptr_t *out_block,
         int *out_slot)
 {
-        /* search for a layout with a free slot */
+        struct chunk_block *block = NULL;
 
-        struct chunk_block *ch = 0;
+        /* search for a layout with a free slot */
 
         for(int i = 0; i < CHUNKY_MAX_BLOCKS; ++i) {
                 if((ctx->info[i].layout & layout) != layout) {
@@ -103,13 +101,15 @@ chunky_block_insert_slot(
                         continue;
                 }
 
-                ch = &ctx->block[i];
+                block = &ctx->block[i];
                 break;
         }
         
         /* search for an empty chunk */
 
-        if(!ch) {
+        if(!block) {
+                /* find a new block that is emtpy */
+
                 for(int i = 0; i < CHUNKY_MAX_BLOCKS; ++i) {
                         if(ctx->info[i].layout != 0) {
                                 continue;
@@ -118,44 +118,108 @@ chunky_block_insert_slot(
                         /* setup chunk */
 
                         ctx->info[i].layout = layout;
-                        ch = &ctx->block[i];
-
-                        /* sizes */
-
-                        memcpy(ch->header.strides, component_strides, sizeof(ch->header.strides));
-
-                        /* data offset */
-
-                        uintptr_t start = (uintptr_t)ch->data;
-                        ch->header.components[0] = start; /* entity array */
-
-                        for(int j = 1; j < 64; ++j) {
-                                ch->header.components[j] = (start + component_offsets[j]) * !!component_offsets[j];
-                        }
-
-                        ch->header.capacity = 4;
-                        ch->header.count = 0;
+                        block = &ctx->block[i];
 
                         break;
                 }
-        }
 
+                if(!block) {
+                        assert(!"Failed to find a block");
+                        return 0;
+                }
+
+                /* Can we fit this into this chunk, right now all we assume we can fit
+                 * 4 instances into a chunk, this does mean if our objects are too large
+                 * this function will return 0, and if our objects are small there is
+                 * alot of wasted space. The 16 byte padding is to remind me to align
+                 * on 16 byte boundries...
+                 */
+
+                /* bytes needed */
+
+                size_t bytes_needed = sizeof(uintptr_t) * 4;
+                bytes_needed += 16;
+
+                for(int i = 0; i < CHUNKY_MAX_COMPONENTS; ++i) {
+                        
+                        if(!(layout & ctx->comps[i].bit)) {
+                                continue;
+                        }
+
+                        bytes_needed += ctx->comps[i].bytes * 4;
+                        bytes_needed += 16;
+                }
+
+                // 15864 space in the data part of a chunk.
+                if(bytes_needed >= 15864) {
+                        assert(!"Doesn't fit in a chunk");
+                        return 0;
+                }
+
+                /* For each component calculate where it sits in the data
+                 * section of a chunk.
+                 */
+
+                uint16_t deltas[CHUNKY_MAX_COMPONENTS] = {0};
+                uint8_t strides[CHUNKY_MAX_COMPONENTS] = {0};
+
+                uint16_t dt_idx = 0;
+                deltas[dt_idx] = 0; /* entity array */
+                strides[dt_idx] = sizeof(uintptr_t);
+
+                dt_idx += 1;
+
+                size_t byte_offset = sizeof(uintptr_t) * 4;
+                byte_offset += 16;
+
+                for(int i = 1; i < CHUNKY_MAX_COMPONENTS; ++i) {
+                        
+                        int comp_idx = i -1;
+                        uint64_t src_bit = ctx->comps[comp_idx].bit;
+
+                        if(!(src_bit & layout)) {
+                                continue;
+                        }
+
+                        size_t src_bytes = ctx->comps[comp_idx].bytes;
+
+                        deltas[dt_idx] = (uint16_t)byte_offset;
+                        strides[dt_idx] = (uint8_t)src_bytes;
+                        dt_idx += 1;
+
+                        assert(dt_idx <= 64);
+
+                        byte_offset += src_bytes * 4;
+                        byte_offset += 16;
+
+                        assert(byte_offset < 0xFFFF && "Make sure uint16_t is big enough");
+                }
+
+                /* Setup chunk 
+                 * Now we have processed the layout information we can setup the
+                 * chunk ready for use.
+                 */
+
+                /* sizes */
+
+                memcpy(block->header.strides, strides, sizeof(block->header.strides));
+
+                /* data offset */
+
+                uintptr_t start = (uintptr_t)block->data;
+                block->header.components[0] = start; /* entity array */
+
+                for(int j = 1; j < CHUNKY_MAX_COMPONENTS; ++j) {
+                        block->header.components[j] = (start + deltas[j]) * !!deltas[j];
+                }
+
+                block->header.capacity = 4;
+                block->header.count = 0;
+        }
+ 
         /* if we don't have an empty block its all full */
 
-        if(!ch) {
-                assert(!"All blocks are full");
-                return 0;
-        }
-
-        /* insert new entity */
-
-        uintptr_t *entities = (uintptr_t*)ch->header.components[0];
-        entities[ch->header.count] = entity_id;
-
-        *out_block = (uintptr_t)ch;
-        *out_slot = ch->header.count;
-
-        ch->header.count += 1;
+ 
 
         return 1;
 }

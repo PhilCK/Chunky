@@ -19,6 +19,8 @@ struct chunky_recorder;
 #define CHUNKY_MINOR_VER 0
 #define CHUNKY_PATCH_VER 0
 
+#define CHUNKY_MAX_COMPONENTS 64
+
 /* -------------------------------------------------------------------------- */
 /* Lifetime
  */

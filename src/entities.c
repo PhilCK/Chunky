@@ -84,24 +84,26 @@ chunky_entity_create(
          * these types.
          */
 
-        for(int i = 0; i < CHUNKY_MAX_BLOCKS; ++i) {
+        // for(int i = 0; i < CHUNKY_MAX_BLOCKS; ++i) {
 
-                /* If this chunk has a type keep moving.
-                 */
+        //         /* If this chunk has a type keep moving.
+        //          */
 
-                if(ctx->info[i].layout != 0) {
-                        continue;
-                }
+        //         if(ctx->info[i].layout != 0) {
+        //                 continue;
+        //         }
 
-                // We found a free chunk so we can allocate this entity to it.
+        //         // We found a free chunk so we can allocate this entity to it.
                  
 
-                ctx->info[i].layout = components;
-                ctx->block[i].header.count = 1;
-                ctx->block[i].header.capacity = 4;
+        //         ctx->info[i].layout = components;
+        //         ctx->block[i].header.count = 1;
+        //         ctx->block[i].header.capacity = 4;
 
-                break;
-        }
+        //         break;
+        // }
+
+        chunky_block_insert_slot(ctx, components, entity, NULL, NULL);
 
         //int insert = chunky_block_insert_slot(ctx, )
 

@@ -108,36 +108,32 @@ UTEST_F(component_test_fixture, multi_reg) {
 
 UTEST_F(component_test_fixture, max_reg) {
 
-        #define COMP_COUNT 64
-
         ASSERT_TRUE(chunky_components_count(utest_fixture->ctx) == 0);
 
-        struct chunky_component_desc desc[COMP_COUNT] = {0};
+        struct chunky_component_desc desc[CHUNKY_MAX_COMPONENTS] = {0};
 
         /* create some junky data
          */
 
         const char *name = "max_reg";
 
-        for(int i = 0; i < COMP_COUNT; ++i) {
+        for(int i = 0; i < CHUNKY_MAX_COMPONENTS; ++i) {
                 desc[i].bytes = i + 1;
                 desc[i].name = name;
         }
 
-        uint64_t ids[COMP_COUNT] = {0};
+        uint64_t ids[CHUNKY_MAX_COMPONENTS] = {0};
 
         int ok = chunky_components_create(
                 utest_fixture->ctx,
                 desc,
-                COMP_COUNT,
+                CHUNKY_MAX_COMPONENTS,
                 ids);
 
         ASSERT_TRUE(ok > 0);
-        ASSERT_TRUE(chunky_components_count(utest_fixture->ctx) == COMP_COUNT);
+        ASSERT_TRUE(chunky_components_count(utest_fixture->ctx) == CHUNKY_MAX_COMPONENTS);
 
-        for(int i = 0; i < COMP_COUNT; ++i) {
+        for(int i = 0; i < CHUNKY_MAX_COMPONENTS; ++i) {
                 ASSERT_TRUE(ids[i] == 1ULL << i);
         }
-
-        #undef COMP_COUNT
 }
