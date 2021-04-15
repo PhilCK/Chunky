@@ -48,8 +48,13 @@ UTEST_F_SETUP(block) {
                 3,
                 components);
 
+        ASSERT_TRUE(components[0] > 0);
         utest_fixture->tform_compid = components[0];
+
+        ASSERT_TRUE(components[1] > 0);
         utest_fixture->bounds_compid = components[1];
+
+        ASSERT_TRUE(components[2] > 0);
         utest_fixture->renderable_compid = components[2];
 
         ASSERT_TRUE(ok > 0);
@@ -107,7 +112,7 @@ UTEST_F(block, access_component_data) {
                 tform = chunky_block_data(
                     utest_fixture->ctx,
                     headers[0],
-                    utest_fixture->bounds_compid);
+                    utest_fixture->tform_compid);
 
                 ASSERT_TRUE(tform != NULL);
         };

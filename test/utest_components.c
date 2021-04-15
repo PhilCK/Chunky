@@ -3,7 +3,7 @@
 #include "../src/chunky_ctx.h" /* peek at the state */
 #include <string.h>
 
-struct component_test_fixture {
+struct components {
         struct chunky_ctx *ctx;
 };
 
@@ -12,7 +12,7 @@ is_pow2(uint64_t i) {
         return (i & (i - 1)) == 0;
 }
 
-UTEST_F_SETUP(component_test_fixture) {
+UTEST_F_SETUP(components) {
         struct chunky_ctx *ch_ctx = 0;
         ch_ctx = chunky_create();
 
@@ -21,7 +21,7 @@ UTEST_F_SETUP(component_test_fixture) {
         utest_fixture->ctx = ch_ctx;
 }
 
-UTEST_F_TEARDOWN(component_test_fixture) {
+UTEST_F_TEARDOWN(components) {
         struct chunky_ctx *ch_ctx = utest_fixture->ctx;
 
         int ok = chunky_destroy(&ch_ctx);
@@ -30,7 +30,7 @@ UTEST_F_TEARDOWN(component_test_fixture) {
         ASSERT_TRUE(ch_ctx == 0);
 }
 
-UTEST_F(component_test_fixture, single_reg) {
+UTEST_F(components, single_reg) {
         ASSERT_TRUE(chunky_components_count(utest_fixture->ctx) == 0);
 
         struct chunky_component_desc desc = {
@@ -58,7 +58,7 @@ UTEST_F(component_test_fixture, single_reg) {
         ASSERT_TRUE(strcmp(utest_fixture->ctx->comps[0].name, desc.name) == 0);
 }
 
-UTEST_F(component_test_fixture, multi_reg) {
+UTEST_F(components, multi_reg) {
 
         #define COMP_COUNT 3
 
@@ -106,7 +106,7 @@ UTEST_F(component_test_fixture, multi_reg) {
         #undef COMP_COUNT
 }
 
-UTEST_F(component_test_fixture, max_reg) {
+UTEST_F(components, max_reg) {
 
         ASSERT_TRUE(chunky_components_count(utest_fixture->ctx) == 0);
 

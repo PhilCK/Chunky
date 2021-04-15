@@ -61,7 +61,7 @@ chunky_block_data(
 
         int idx = id2idx(component);
 
-        if(idx == 0) {
+        if(idx == -1) {
                 assert(!"Invalid id - We need a component id");
                 return NULL;
         }
@@ -70,7 +70,7 @@ chunky_block_data(
          */
 
         if(!header->components[idx]) {
-                //assert(!"This component data is not valid in this chunk");
+                assert(!"This component data is not valid in this chunk");
         }
 
         return (void*)header->components[idx];
@@ -105,7 +105,8 @@ chunky_block_insert_slot(
                 break;
         }
         
-        /* search for an empty chunk */
+        /* search for an empty chunk
+         */
 
         if(!block) {
                 /* find a new block that is emtpy */
@@ -137,8 +138,8 @@ chunky_block_insert_slot(
 
                 /* bytes needed */
 
-                size_t bytes_needed = sizeof(uintptr_t) * 4;
-                bytes_needed += 16;
+                size_t bytes_per_ent = sizeof(uintptr_t); /* entity */
+                size_t elements = 1;
 
                 for(int i = 0; i < CHUNKY_MAX_COMPONENTS; ++i) {
                         
@@ -146,15 +147,35 @@ chunky_block_insert_slot(
                                 continue;
                         }
 
-                        bytes_needed += ctx->comps[i].bytes * 4;
-                        bytes_needed += 16;
+                        bytes_per_ent += ctx->comps[i].bytes;
+                        elements += 1;
                 }
 
-                // 15864 space in the data part of a chunk.
-                if(bytes_needed >= 15864) {
-                        assert(!"Doesn't fit in a chunk");
-                        return 0;
-                }
+                size_t dst_size = sizeof(((struct chunk_block*)0)->data);
+                dst_size -= (32 * elements);
+
+                size_t max_capacity = dst_size / bytes_per_ent;
+
+                /* bytes needed */
+
+                // size_t bytes_needed = sizeof(uintptr_t) * 4;
+                // bytes_needed += 32;
+
+                // for(int i = 0; i < CHUNKY_MAX_COMPONENTS; ++i) {
+                        
+                //         if(!(layout & ctx->comps[i].bit)) {
+                //                 continue;
+                //         }
+
+                //         bytes_needed += ctx->comps[i].bytes * 4;
+                //         bytes_needed += 32;
+                // }
+
+                // // 15864 space in the data part of a chunk.
+                // if(bytes_needed >= 15864) {
+                //         assert(!"Doesn't fit in a chunk");
+                //         return 0;
+                // }
 
                 /* For each component calculate where it sits in the data
                  * section of a chunk.
@@ -167,14 +188,12 @@ chunky_block_insert_slot(
                 deltas[dt_idx] = 0; /* entity array */
                 strides[dt_idx] = sizeof(uintptr_t);
 
-                dt_idx += 1;
+                size_t byte_offset = sizeof(uintptr_t) * max_capacity;
+                byte_offset += 32;
 
-                size_t byte_offset = sizeof(uintptr_t) * 4;
-                byte_offset += 16;
-
-                for(int i = 1; i < CHUNKY_MAX_COMPONENTS; ++i) {
+                for(int i = 0; i < CHUNKY_MAX_COMPONENTS; ++i) {
                         
-                        int comp_idx = i -1;
+                        int comp_idx = i;
                         uint64_t src_bit = ctx->comps[comp_idx].bit;
 
                         if(!(src_bit & layout)) {
@@ -187,10 +206,10 @@ chunky_block_insert_slot(
                         strides[dt_idx] = (uint8_t)src_bytes;
                         dt_idx += 1;
 
-                        assert(dt_idx <= 64);
+                        assert(dt_idx <= CHUNKY_MAX_COMPONENTS);
 
-                        byte_offset += src_bytes * 4;
-                        byte_offset += 16;
+                        byte_offset += src_bytes * max_capacity;
+                        byte_offset += 32;
 
                         assert(byte_offset < 0xFFFF && "Make sure uint16_t is big enough");
                 }
@@ -207,19 +226,20 @@ chunky_block_insert_slot(
                 /* data offset */
 
                 uintptr_t start = (uintptr_t)block->data;
-                block->header.components[0] = start; /* entity array */
+                block->header.entities = start; /* entity array */
 
-                for(int j = 1; j < CHUNKY_MAX_COMPONENTS; ++j) {
+                for(int j = 0; j < CHUNKY_MAX_COMPONENTS; ++j) {
                         block->header.components[j] = (start + deltas[j]) * !!deltas[j];
                 }
 
-                block->header.capacity = 4;
-                block->header.count = 0;
+                block->header.capacity = (uint16_t)max_capacity;
+                block->header.count = 1;
+
+                uintptr_t *ent = (uintptr_t*)block->header.entities;
+                ent[0] = entity_id;
         }
  
         /* if we don't have an empty block its all full */
-
- 
 
         return 1;
 }

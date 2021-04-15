@@ -71,9 +71,10 @@ chunky_components_count(
  */
 
 struct chunky_block_header {
-        uint32_t count;
-        uint32_t capacity;
+        uint16_t count;
+        uint16_t capacity;
         uint8_t strides[64];
+        uintptr_t entities;
         uintptr_t components[64];
 };
 
