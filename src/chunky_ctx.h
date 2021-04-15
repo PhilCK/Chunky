@@ -17,6 +17,10 @@
 #define CHUNKY_MAX_BLOCKS 32
 #endif
 
+#ifndef CHUNKY_MAX_NAME_LEN
+#define CHUNKY_MAX_NAME_LEN 32
+#endif
+
 /* -------------------------------------------------------------------------- */
 /* Helpers and Constants
  */
@@ -36,7 +40,7 @@ ispow2(uint64_t i) {
  */
 static int
 id2idx(uint64_t id) {
-        for(uint64_t i = 0; i < 64; ++i) {
+        for(uint64_t i = 0; i < CHUNKY_MAX_COMPONENTS; ++i) {
         	uint64_t j = 1ULL << i;
 
         	if(id == j) {
@@ -62,18 +66,18 @@ struct chunk_block {
 
 struct chunk_layout {
         uint64_t bit_pattern;
-        uint16_t deltas[64];
-        uint8_t strides[64];
+        uint16_t deltas[CHUNKY_MAX_COMPONENTS];
+        uint8_t strides[CHUNKY_MAX_COMPONENTS];
 };
 
 struct chunky_entity {
         size_t idx;
-        char name[32];
+        char name[CHUNKY_MAX_NAME_LEN];
         uint64_t components;
 };
 
 struct chunky_component {
-        char name[32];
+        char name[CHUNKY_MAX_NAME_LEN];
         size_t bytes;
         uint64_t bit;
 };
@@ -82,7 +86,7 @@ struct chunky_ctx {
         struct chunk_info info[CHUNKY_MAX_BLOCKS];
         struct chunk_block block[CHUNKY_MAX_BLOCKS];
 
-        struct chunk_layout layouts[64];
+        struct chunk_layout layouts[CHUNKY_MAX_COMPONENTS];
         int layout_count;
 
         uint8_t entity_state[CHUNKY_MAX_ENTITIES];
@@ -103,8 +107,6 @@ chunky_block_insert_slot(
         uintptr_t entity_id,
         uintptr_t *out_block,
         int *out_slot);
-
-
 
 /* -------------------------------------------------------------------------- */
 

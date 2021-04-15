@@ -46,6 +46,19 @@ chunky_entity_destroy(
         struct chunky_ctx *ctx,                         /* required */
         uintptr_t entity);                              /* required */
 
+int
+chunky_entity_name_set(
+        struct chunky_ctx *ctx,                         /* required */
+        uintptr_t entity,
+        const char *name);                              /* required */
+
+int
+chunky_entity_name_get(
+        struct chunky_ctx *ctx,                         /* required */
+        uintptr_t entity,
+        char *name,                                     /* required */
+        size_t *name_len);                              /* required */
+
 /* -------------------------------------------------------------------------- */
 /* Components
  */

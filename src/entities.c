@@ -50,32 +50,6 @@ chunky_entity_create(
          * the entity to take.
          */
 
-        // for(int i = 0; i < CHUNKY_MAX_BLOCKS; ++i) {
-
-        //         /* Skip as chunk doesn't have the right types.
-        //          */
-
-        //         if(ctx->info[i].layout != components) {
-        //                 continue;
-        //         }
-
-        //         /* Skip as chunk doesn't have space
-        //          */
-
-        //         struct chunk_block *potential = &ctx->block[i];
-
-        //         if(potential->header.count >= potential->header.capacity) {
-        //                 continue;
-        //         }
-
-        //         /* Ok we seem to have found a block that has this type and
-        //          * some space.
-        //          */
-
-        //         block = potential;
-        //         break;
-        // }
-
         if(block != NULL) {
                 return entity;
         }
@@ -84,28 +58,7 @@ chunky_entity_create(
          * these types.
          */
 
-        // for(int i = 0; i < CHUNKY_MAX_BLOCKS; ++i) {
-
-        //         /* If this chunk has a type keep moving.
-        //          */
-
-        //         if(ctx->info[i].layout != 0) {
-        //                 continue;
-        //         }
-
-        //         // We found a free chunk so we can allocate this entity to it.
-                 
-
-        //         ctx->info[i].layout = components;
-        //         ctx->block[i].header.count = 1;
-        //         ctx->block[i].header.capacity = 4;
-
-        //         break;
-        // }
-
         chunky_block_insert_slot(ctx, components, entity, NULL, NULL);
-
-        //int insert = chunky_block_insert_slot(ctx, )
 
         return entity;
 }
@@ -130,6 +83,55 @@ chunky_entity_destroy(
         e->idx = 0;
         e->components = 0;
         memset(e->name, 0, sizeof(e->name));
+
+        return 1;
+}
+
+int
+chunky_entity_name_set(
+        struct chunky_ctx *ctx,
+        uintptr_t entity,
+        const char *name)
+{
+        assert(ctx && "No null ctx");
+        assert(entity && "Must be an entity");
+
+        struct chunky_entity *ent = (struct chunky_entity*)entity;
+
+        /* set the name 
+         * we append a null char on the end just to be sure
+         */
+
+        memset(ent->name, 0, sizeof(ent->name));
+        strncat(ent->name, name, sizeof(ent->name));
+        ent->name[CHUNKY_MAX_NAME_LEN - 1] = '\0';
+
+        return 1;
+}
+
+int
+chunky_entity_name_get(
+        struct chunky_ctx *ctx,
+        uintptr_t entity,
+        char *name,
+        size_t *name_len)
+{
+        assert(ctx && "No null ctx");
+        assert(entity && "Must be an entity");
+
+        struct chunky_entity *ent = (struct chunky_entity*)entity;
+
+        /* get the name 
+         */
+
+        size_t len = strlen(ent->name);
+        *name_len = len;
+
+        if(!name) {
+                return 1;
+        }
+
+        memcpy(name, ent->name, len);
 
         return 1;
 }

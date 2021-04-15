@@ -40,6 +40,89 @@ UTEST_F(entity, create_destroy_entity) {
         ASSERT_TRUE(ok > 0);
 }
 
+UTEST_F(entity, get_set_name) {
+
+        /* Create an entity and set it's name.
+         */
+
+        uintptr_t ent = chunky_entity_create(utest_fixture->ctx, 0);
+
+        /* Set the name to something unique
+         */
+
+        const char *name = "foobar";
+
+        (void)chunky_entity_name_set(
+                utest_fixture->ctx,
+                ent,
+                name);
+
+        size_t len = 0;
+        (void)chunky_entity_name_get(
+                utest_fixture->ctx,
+                ent,
+                NULL,
+                &len);
+
+        ASSERT_TRUE(len <= CHUNKY_MAX_NAME_LEN);
+
+        /* Get the name, it should be the same as what we set.
+         */
+
+        char get_name[CHUNKY_MAX_NAME_LEN] = {0};
+
+        (void)chunky_entity_name_get(
+                utest_fixture->ctx,
+                ent,
+                get_name,
+                &len);
+
+        ASSERT_TRUE(strcmp(get_name, name) == 0);
+}
+
+UTEST_F(entity, get_set_name_clipped) {
+
+        /* Create an entity and set it's name.
+         */
+
+        uintptr_t ent = chunky_entity_create(utest_fixture->ctx, 0);
+
+        /* Set the name to something really long
+         */
+
+        const char *name = "really_really_really_really_long_name";
+        size_t original_len = strlen(name);
+
+        ASSERT_TRUE(original_len > CHUNKY_MAX_NAME_LEN);
+
+        (void)chunky_entity_name_set(
+                utest_fixture->ctx,
+                ent,
+                name);
+
+        size_t len = 0;
+        (void)chunky_entity_name_get(
+                utest_fixture->ctx,
+                ent,
+                NULL,
+                &len);
+
+        ASSERT_TRUE(len < original_len);
+
+        /* Get the name, it should have its tail cut off.
+         */
+
+        char get_name[CHUNKY_MAX_NAME_LEN] = {0};
+
+        (void)chunky_entity_name_get(
+                utest_fixture->ctx,
+                ent,
+                get_name,
+                &len);
+
+        ASSERT_TRUE(strstr(name, get_name) != NULL);
+}
+
 UTEST_F(entity, create_alot_of_entities) {
 
         /* Feel free to check this by increasing to check it explods
