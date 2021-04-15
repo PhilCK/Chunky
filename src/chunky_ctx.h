@@ -10,7 +10,7 @@
  */
 
 #ifndef CHUNKY_MAX_ENTITIES
-#define CHUNKY_MAX_ENTITIES 128
+#define CHUNKY_MAX_ENTITIES 4096
 #endif
 
 #ifndef CHUNKY_MAX_BLOCKS
