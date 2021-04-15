@@ -76,6 +76,20 @@ chunky_block_data(
         return (void*)header->components[idx];
 }
 
+uintptr_t *
+chunky_block_entities(
+        struct chunky_ctx *ctx,                         /* required */
+        struct chunky_block_header *header)             /* required */
+{
+        assert(ctx && "Requires a context");
+        assert(header && "Requires a header");
+
+        /* Return the entity array
+         */
+
+        return (uintptr_t*const)header->entities;
+}
+
 /* -------------------------------------------------------------------------- */
 /* Internal
  */

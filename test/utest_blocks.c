@@ -118,6 +118,48 @@ UTEST_F(block, access_component_data) {
         };
 }
 
+UTEST_F(block, access_entity_data) {
+        size_t count = 0;
+
+        /* Create an entity
+         * With a some components, we should be able to find the chunk of this
+         * entity, by matching the components.
+         */
+
+        uintptr_t ent = chunky_entity_create(
+                utest_fixture->ctx, 
+                utest_fixture->tform_compid | utest_fixture->bounds_compid);
+
+        int ok = chunky_find_blocks(
+                utest_fixture->ctx,
+                utest_fixture->tform_compid | utest_fixture->bounds_compid,
+                NULL,
+                &count);
+
+        /* We should be able to get the chunk header that this array landed in.
+         */
+
+        ASSERT_TRUE(count == 1);
+
+        struct chunky_block_header *headers[1] = {0};
+
+        ok = chunky_find_blocks(
+                utest_fixture->ctx,
+                utest_fixture->tform_compid | utest_fixture->bounds_compid,
+                headers,
+                &count);
+
+        /* Now we have the chunk, we should be able to access the entities
+         */
+
+        uintptr_t * entities = NULL;
+        entities = chunky_block_entities(
+            utest_fixture->ctx,
+            headers[0]);
+
+        ASSERT_TRUE(entities != NULL);
+}
+
 UTEST_F(block, get_empty_blocks) {
         size_t count = 0;
 

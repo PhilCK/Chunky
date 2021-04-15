@@ -85,6 +85,11 @@ chunky_find_blocks(
         struct chunky_block_header **out_headers,       /* optional */
         size_t *count);                                 /* required */
 
+uintptr_t *
+chunky_block_entities(
+        struct chunky_ctx *ctx,                         /* required */
+        struct chunky_block_header *header);            /* required */
+
 void *
 chunky_block_data(
         struct chunky_ctx *ctx,                         /* required */
