@@ -200,12 +200,12 @@ UTEST_F(block, mem_corruption_test) {
         for(int i = 0; i < ENT_COUNT; ++i) {
                 ents[i] = chunky_entity_create(
                         utest_fixture->ctx, 
-                        utest_fixture->tform_compid | utest_fixture->bounds_compid);
+                        utest_fixture->tform_compid | utest_fixture->bounds_compid | utest_fixture->renderable_compid);
         }
 
         int ok = chunky_find_blocks(
                 utest_fixture->ctx,
-                utest_fixture->tform_compid | utest_fixture->bounds_compid,
+                utest_fixture->tform_compid | utest_fixture->bounds_compid | utest_fixture->renderable_compid,
                 NULL,
                 &count);
 
@@ -219,7 +219,7 @@ UTEST_F(block, mem_corruption_test) {
 
         ok = chunky_find_blocks(
                 utest_fixture->ctx,
-                utest_fixture->tform_compid | utest_fixture->bounds_compid,
+                utest_fixture->tform_compid | utest_fixture->bounds_compid | utest_fixture->renderable_compid,
                 headers,
                 &count);
 
@@ -238,10 +238,10 @@ UTEST_F(block, mem_corruption_test) {
                 headers[0],utest_fixture->bounds_compid);
         ASSERT_TRUE(bounds != NULL);
 
-        // struct renderable_comp *rdr = chunky_block_data(
-        //         utest_fixture->ctx,
-        //         headers[0],utest_fixture->renderable_compid);
-        // ASSERT_TRUE(rdr != NULL);
+        struct renderable_comp *rdr = chunky_block_data(
+                utest_fixture->ctx,
+                headers[0],utest_fixture->renderable_compid);
+        ASSERT_TRUE(rdr != NULL);
 
         for(int i = 0; i < headers[0]->count; ++i) {
                 struct tform_comp tc = {
@@ -254,10 +254,10 @@ UTEST_F(block, mem_corruption_test) {
                 };
                 bounds[i] = bc;
 
-                // struct renderable_comp rc = {
-                //         .data = {3,3}
-                // };
-                // rdr[i] = rc;
+                struct renderable_comp rc = {
+                        .data = {3,3}
+                };
+                rdr[i] = rc;
         }
 
         /* Now we have filled the data we should be able to check to see if the
@@ -289,6 +289,9 @@ UTEST_F(block, mem_corruption_test) {
                 ASSERT_TRUE(bounds[i].data[3] == 2);
                 ASSERT_TRUE(bounds[i].data[4] == 2);
                 ASSERT_TRUE(bounds[i].data[5] == 2);
+
+                ASSERT_TRUE(rdr[i].data[0] == 3);
+                ASSERT_TRUE(rdr[i].data[1] == 3);
         }
 
         #undef ENT_COUNT
