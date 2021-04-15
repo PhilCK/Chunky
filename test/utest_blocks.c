@@ -3,6 +3,18 @@
 #include "../src/chunky_ctx.h" /* peek at the state */
 #include <string.h>
 
+struct tform_comp {
+        uint32_t data[10];
+};
+
+struct bounds_comp {
+        uint32_t data[6];
+};
+
+struct renderable_comp {
+        uint32_t data[2];
+};
+
 struct block {
         struct chunky_ctx *ctx;
 
@@ -28,15 +40,15 @@ UTEST_F_SETUP(block) {
         struct chunky_component_desc desc[3] = {
                 {
                         .name = "transform",
-                        .bytes = sizeof(float) * 10
+                        .bytes = sizeof(struct tform_comp)
                 },
                 {
                         .name = "bounds",
-                        .bytes = sizeof(float) * 6
+                        .bytes = sizeof(struct bounds_comp)
                 },
                 {
                         .name = "renderable",
-                        .bytes = sizeof(uintptr_t) * 2
+                        .bytes = sizeof(struct renderable_comp)
                 }
         };
 
@@ -118,17 +130,23 @@ UTEST_F(block, access_component_data) {
         };
 }
 
-UTEST_F(block, access_entity_data) {
+UTEST_F(block, access_entity_data_full) {
         size_t count = 0;
+
+        #define ENT_COUNT 32
+
+        uintptr_t ents[ENT_COUNT];
 
         /* Create an entity
          * With a some components, we should be able to find the chunk of this
          * entity, by matching the components.
          */
 
-        uintptr_t ent = chunky_entity_create(
-                utest_fixture->ctx, 
-                utest_fixture->tform_compid | utest_fixture->bounds_compid);
+        for(int i = 0; i < ENT_COUNT; ++i) {
+                ents[i] = chunky_entity_create(
+                        utest_fixture->ctx, 
+                        utest_fixture->tform_compid | utest_fixture->bounds_compid);
+        }
 
         int ok = chunky_find_blocks(
                 utest_fixture->ctx,
@@ -136,7 +154,8 @@ UTEST_F(block, access_entity_data) {
                 NULL,
                 &count);
 
-        /* We should be able to get the chunk header that this array landed in.
+        /* We should be able to get the chunk header that this data landed in.
+         * Test is only geared towards landing in a single block.
          */
 
         ASSERT_TRUE(count == 1);
@@ -150,14 +169,129 @@ UTEST_F(block, access_entity_data) {
                 &count);
 
         /* Now we have the chunk, we should be able to access the entities
+         * We compare the entities we get back from the block, with the ones
+         * we got when we created the entity.
          */
 
         uintptr_t * entities = NULL;
         entities = chunky_block_entities(
-            utest_fixture->ctx,
-            headers[0]);
+                utest_fixture->ctx,
+                headers[0]);
 
-        ASSERT_TRUE(entities != NULL);
+        for(int i = 0; i < ENT_COUNT; ++i) {
+                ASSERT_TRUE(entities[i] == ents[i]);
+        }
+
+        #undef ENT_COUNT
+}
+
+UTEST_F(block, mem_corruption_test) {
+        size_t count = 0;
+
+        #define ENT_COUNT 32
+
+        uintptr_t ents[ENT_COUNT];
+
+        /* Create an entity
+         * With a some components, we should be able to find the chunk of this
+         * entity, by matching the components.
+         */
+
+        for(int i = 0; i < ENT_COUNT; ++i) {
+                ents[i] = chunky_entity_create(
+                        utest_fixture->ctx, 
+                        utest_fixture->tform_compid | utest_fixture->bounds_compid);
+        }
+
+        int ok = chunky_find_blocks(
+                utest_fixture->ctx,
+                utest_fixture->tform_compid | utest_fixture->bounds_compid,
+                NULL,
+                &count);
+
+        /* We should be able to get the chunk header that this data landed in.
+         * Test is only geared towards landing in a single block.
+         */
+
+        ASSERT_TRUE(count == 1);
+
+        struct chunky_block_header *headers[1] = {0};
+
+        ok = chunky_find_blocks(
+                utest_fixture->ctx,
+                utest_fixture->tform_compid | utest_fixture->bounds_compid,
+                headers,
+                &count);
+
+        /* We are going to insert a bunch of data into each entity's components
+         * Then we are going to check to see if the data is still correct.
+         */
+
+        struct tform_comp *tform = chunky_block_data(
+                utest_fixture->ctx,
+                headers[0],
+                utest_fixture->tform_compid);
+        ASSERT_TRUE(tform != NULL);
+
+        struct bounds_comp *bounds = chunky_block_data(
+                utest_fixture->ctx,
+                headers[0],utest_fixture->bounds_compid);
+        ASSERT_TRUE(bounds != NULL);
+
+        // struct renderable_comp *rdr = chunky_block_data(
+        //         utest_fixture->ctx,
+        //         headers[0],utest_fixture->renderable_compid);
+        // ASSERT_TRUE(rdr != NULL);
+
+        for(int i = 0; i < headers[0]->count; ++i) {
+                struct tform_comp tc = {
+                        .data = {1,1,1,1,1,1,1,1,1,1}
+                };
+                tform[i] = tc;
+
+                struct bounds_comp bc = {
+                        .data = {2,2,2,2,2,2}
+                };
+                bounds[i] = bc;
+
+                // struct renderable_comp rc = {
+                //         .data = {3,3}
+                // };
+                // rdr[i] = rc;
+        }
+
+        /* Now we have filled the data we should be able to check to see if the
+         * various arrays are still intact.
+         */
+
+        uintptr_t * entities = NULL;
+        entities = chunky_block_entities(
+                utest_fixture->ctx,
+                headers[0]);
+
+        for(int i = 0; i < ENT_COUNT; ++i) {
+                ASSERT_TRUE(entities[i] == ents[i]);
+
+                ASSERT_TRUE(tform[i].data[0] == 1);
+                ASSERT_TRUE(tform[i].data[1] == 1);
+                ASSERT_TRUE(tform[i].data[2] == 1);
+                ASSERT_TRUE(tform[i].data[3] == 1);
+                ASSERT_TRUE(tform[i].data[4] == 1);
+                ASSERT_TRUE(tform[i].data[5] == 1);
+                ASSERT_TRUE(tform[i].data[6] == 1);
+                ASSERT_TRUE(tform[i].data[7] == 1);
+                ASSERT_TRUE(tform[i].data[8] == 1);
+                ASSERT_TRUE(tform[i].data[9] == 1);
+
+                ASSERT_TRUE(bounds[i].data[0] == 2);
+                ASSERT_TRUE(bounds[i].data[1] == 2);
+                ASSERT_TRUE(bounds[i].data[2] == 2);
+                ASSERT_TRUE(bounds[i].data[3] == 2);
+                ASSERT_TRUE(bounds[i].data[4] == 2);
+                ASSERT_TRUE(bounds[i].data[5] == 2);
+        }
+
+        #undef ENT_COUNT
 }
 
 UTEST_F(block, get_empty_blocks) {

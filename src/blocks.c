@@ -247,13 +247,23 @@ chunky_block_insert_slot(
                 }
 
                 block->header.capacity = (uint16_t)max_capacity;
-                block->header.count = 1;
-
-                uintptr_t *ent = (uintptr_t*)block->header.entities;
-                ent[0] = entity_id;
+                block->header.count = 0;
         }
- 
-        /* if we don't have an empty block its all full */
+
+        if(!block) {
+                assert(!"Failed to setup a new block");
+                return 0;
+        }
+
+
+        /* We can insert the new entity into the block
+         */
+
+        uintptr_t *ent = (uintptr_t*)block->header.entities;
+
+        size_t curr_idx = block->header.count;
+        ent[curr_idx] = entity_id;
+        block->header.count += 1;
 
         return 1;
 }

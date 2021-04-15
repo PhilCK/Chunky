@@ -55,4 +55,3 @@ UTEST_F(entity, create_alot_of_entities) {
 
         ASSERT_TRUE(1);
 }
-
