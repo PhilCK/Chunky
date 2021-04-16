@@ -21,6 +21,14 @@
 #define CHUNKY_MAX_NAME_LEN 32
 #endif
 
+#ifndef CHUNKY_BLOCK_ALIGNON
+#define CHUNKY_BLOCK_ALIGNON 16
+#endif
+
+#ifndef CHUNKY_BLOCK_COMPONENT_GAP
+#define CHUNKY_BLOCK_COMPONENT_GAP (CHUNKY_BLOCK_ALIGNON * 2)
+#endif
+
 /* -------------------------------------------------------------------------- */
 /* Helpers and Constants
  */
@@ -30,7 +38,7 @@
  */
 static int
 ispow2(uint64_t i) {
-	return ((i != 0) && ((i & (i - 1)) == 0));
+        return ((i != 0) && ((i & (i - 1)) == 0));
 }
 
 /* Since components are powers of two we need to convert them to an index.
@@ -41,11 +49,11 @@ ispow2(uint64_t i) {
 static int
 id2idx(uint64_t id) {
         for(uint64_t i = 0; i < CHUNKY_MAX_COMPONENTS; ++i) {
-        	uint64_t j = 1ULL << i;
+                uint64_t j = 1ULL << i;
 
-        	if(id == j) {
-        		return (int)i;
-        	}
+                if(id == j) {
+                        return (int)i;
+                }
         }
 
         return -1;
@@ -74,6 +82,8 @@ struct chunky_entity {
         size_t idx;
         char name[CHUNKY_MAX_NAME_LEN];
         uint64_t components;
+        int16_t slot_idx;
+        struct chunk_block *block;
 };
 
 struct chunky_component {
@@ -101,12 +111,16 @@ struct chunky_ctx {
  */
 
 int
-chunky_block_insert_slot(
+chunky_block_append_slot(
         struct chunky_ctx *ctx,
         uint64_t layout,
-        uintptr_t entity_id,
-        uintptr_t *out_block,
-        int *out_slot);
+        uintptr_t entity_id);
+
+int
+chunky_block_remove_slot(
+        struct chunky_ctx *ctx,
+        struct chunk_block *block,
+        int slot);
 
 /* -------------------------------------------------------------------------- */
 

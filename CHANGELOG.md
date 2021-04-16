@@ -11,5 +11,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Ability to register components.
 - Ability to create entities.
-- Ability to get chunks with component type.
+- Ability to get blocks with component type.
 - Ability to get component data out of chunk.
+- Ability to delete entities.

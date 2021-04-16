@@ -95,12 +95,10 @@ chunky_block_entities(
  */
 
 int
-chunky_block_insert_slot(
+chunky_block_append_slot(
         struct chunky_ctx *ctx,
         uint64_t layout,
-        uintptr_t entity_id,
-        uintptr_t *out_block,
-        int *out_slot)
+        uintptr_t entity_id)
 {
         struct chunk_block *block = NULL;
 
@@ -166,30 +164,9 @@ chunky_block_insert_slot(
                 }
 
                 size_t dst_size = sizeof(((struct chunk_block*)0)->data);
-                dst_size -= (32 * elements);
+                dst_size -= (CHUNKY_BLOCK_COMPONENT_GAP * elements);
 
                 size_t max_capacity = dst_size / bytes_per_ent;
-
-                /* bytes needed */
-
-                // size_t bytes_needed = sizeof(uintptr_t) * 4;
-                // bytes_needed += 32;
-
-                // for(int i = 0; i < CHUNKY_MAX_COMPONENTS; ++i) {
-                        
-                //         if(!(layout & ctx->comps[i].bit)) {
-                //                 continue;
-                //         }
-
-                //         bytes_needed += ctx->comps[i].bytes * 4;
-                //         bytes_needed += 32;
-                // }
-
-                // // 15864 space in the data part of a chunk.
-                // if(bytes_needed >= 15864) {
-                //         assert(!"Doesn't fit in a chunk");
-                //         return 0;
-                // }
 
                 /* For each component calculate where it sits in the data
                  * section of a chunk.
@@ -203,7 +180,7 @@ chunky_block_insert_slot(
                 strides[dt_idx] = sizeof(uintptr_t);
 
                 size_t byte_offset = sizeof(uintptr_t) * max_capacity;
-                byte_offset += 32;
+                byte_offset += CHUNKY_BLOCK_COMPONENT_GAP;
 
                 for(int i = 0; i < CHUNKY_MAX_COMPONENTS; ++i) {
                         
@@ -223,7 +200,7 @@ chunky_block_insert_slot(
                         assert(dt_idx <= CHUNKY_MAX_COMPONENTS);
 
                         byte_offset += src_bytes * max_capacity;
-                        byte_offset += 32;
+                        byte_offset += CHUNKY_BLOCK_COMPONENT_GAP;
 
                         assert(byte_offset < 0xFFFF && "Make sure uint16_t is big enough");
                 }
@@ -255,16 +232,80 @@ chunky_block_insert_slot(
                 return 0;
         }
 
+        /* We need to save back some information to the entity so we can find
+         * it when it gets destroyed.
+         */
+
+        struct chunky_entity *ent = (struct chunky_entity*)entity_id;
+        ent->slot_idx = block->header.count;
+        ent->block = block;
 
         /* We can insert the new entity into the block
          */
 
-        uintptr_t *ent = (uintptr_t*)block->header.entities;
+        uintptr_t *ents = (uintptr_t*)block->header.entities;
 
         size_t curr_idx = block->header.count;
-        ent[curr_idx] = entity_id;
+        ents[curr_idx] = entity_id;
         block->header.count += 1;
 
         return 1;
 }
 
+int
+chunky_block_remove_slot(
+        struct chunky_ctx *ctx,
+        struct chunk_block *block,
+        int idx)
+{
+        /* If the block only has one item we are going to return it to the
+         * free pool
+         */
+
+        if(block->header.count == 1) {
+                /* This is urgh! We are going to loop over the chunks to find
+                 * this chunk to remove it.
+                 */
+
+                int remove = 0;
+
+                for(int i = 0; i < CHUNKY_MAX_BLOCKS; ++i) {
+                        if(&ctx->block[i] == block) {
+                                ctx->info[i].layout = 0;
+                                remove = 1;
+                        }
+                }
+
+                assert(remove == 1 && "Failed to find and remove chunk");
+        }
+
+        /* Shuffle down the memory for entities and all the components        
+         */
+
+        uintptr_t *ent_data = (uintptr_t*)block->data;
+
+        size_t ent_bytes = sizeof(uintptr_t) * (block->header.count - idx - 1);
+        memmove(&ent_data[idx], &ent_data[idx + 1], ent_bytes);
+
+        for(int i = 0; i < CHUNKY_MAX_COMPONENTS; ++i) {
+                if(block->header.components[i] == 0) {
+                        /* This chunk doesn't have this data */
+                        continue;
+                }
+
+                uint8_t *data = (uint8_t*)block->header.components[i];
+
+                size_t bytes = block->header.strides[i] * (block->header.count - idx - 1);
+                size_t dst = idx * block->header.strides[i];
+                size_t src = dst + block->header.strides[i];
+
+                memmove(&data[dst], &data[src], bytes);
+        }
+
+        /* Update the manifest
+         */
+
+        block->header.count -= 1;
+
+        return 1;
+}

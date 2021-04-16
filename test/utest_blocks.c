@@ -370,6 +370,59 @@ UTEST_F(block, get_block) {
         ASSERT_TRUE(count == 1);
 }
 
+UTEST_F(block, create_delete_entities) {
+        size_t count = 0;
+
+        /* Create an entity then destroy it.
+         * It shouldn't feature in a block anymore.
+         */
+
+        uintptr_t ent = chunky_entity_create(
+                utest_fixture->ctx, 
+                utest_fixture->tform_compid | utest_fixture->bounds_compid);
+
+        uintptr_t ent2 = chunky_entity_create(
+                utest_fixture->ctx, 
+                utest_fixture->tform_compid | utest_fixture->bounds_compid);
+
+        chunky_entity_destroy(
+                utest_fixture->ctx,
+                ent);
+
+        int ok = chunky_find_blocks(
+                utest_fixture->ctx,
+                utest_fixture->tform_compid | utest_fixture->bounds_compid,
+                NULL,
+                &count);
+
+        ASSERT_TRUE(ok > 0);
+        ASSERT_TRUE(count == 1);
+
+        /* Get the 'block' it should only contain a single entity since we 
+         * deleted the other entity
+         */
+
+        struct chunky_block_header *headers[3] = {0};
+
+        ok = chunky_find_blocks(
+                utest_fixture->ctx,
+                utest_fixture->tform_compid | utest_fixture->bounds_compid,
+                headers,
+                &count);
+
+        ASSERT_TRUE(ok > 0);
+        ASSERT_TRUE(headers[0]->count == 1);
+
+        /* Check that the entity that is remaining is the correct one
+         */
+
+        uintptr_t *e = chunky_block_entities(
+                utest_fixture->ctx,
+                headers[0]);
+
+        ASSERT_TRUE(e[0] == ent2);
+}
+
 UTEST_F(block, get_block_with_subset) {
         size_t count = 0;
 
@@ -405,6 +458,22 @@ UTEST_F(block, get_block_with_subset) {
 
         ASSERT_TRUE(ok > 0);
         ASSERT_TRUE(count == 1);
+
+        /* Remove the last entity and now there should be no block at all
+         */
+
+        chunky_entity_destroy(
+                utest_fixture->ctx,
+                ent);
+
+        ok = chunky_find_blocks(
+                utest_fixture->ctx,
+                utest_fixture->tform_compid | utest_fixture->bounds_compid,
+                NULL,
+                &count);
+
+        ASSERT_TRUE(ok > 0);
+        ASSERT_TRUE(count == 0);
 }
 
 UTEST_F(block, get_no_block_from_wrong_types) {

@@ -41,24 +41,11 @@ chunky_entity_create(
                 return 0;
         }
 
-        /* Find or create a block for this entity's data to live in.
+        /* Find a block with space or create a new block.
+         * Append this entity into a block ...
          */
 
-        struct chunk_block *block = NULL;
-
-        /* Search for a chunk with these types, and has an available slot for
-         * the entity to take.
-         */
-
-        if(block != NULL) {
-                return entity;
-        }
-
-        /* No suitable block was found, we need to create a new block with
-         * these types.
-         */
-
-        chunky_block_insert_slot(ctx, components, entity, NULL, NULL);
+        chunky_block_append_slot(ctx, components, entity);
 
         return entity;
 }
@@ -76,6 +63,11 @@ chunky_entity_destroy(
         struct chunky_entity *e = NULL;
         e = (struct chunky_entity*)entity;
 
+        if(e == NULL) {
+                assert(!"You can't remove a null entity");
+                return 0;
+        }
+
         ctx->entity_state[e->idx] = CHUNKY_ENTITY_FREE;
 
         /* clear data */
@@ -83,6 +75,11 @@ chunky_entity_destroy(
         e->idx = 0;
         e->components = 0;
         memset(e->name, 0, sizeof(e->name));
+
+        /* We need to remove the slot from the chunk it lives in
+         */
+
+        (void)chunky_block_remove_slot(ctx, e->block, e->slot_idx);
 
         return 1;
 }
@@ -103,7 +100,7 @@ chunky_entity_name_set(
          */
 
         memset(ent->name, 0, sizeof(ent->name));
-        strncat(ent->name, name, sizeof(ent->name));
+        strncat(ent->name, name, sizeof(ent->name) - 1);
         ent->name[CHUNKY_MAX_NAME_LEN - 1] = '\0';
 
         return 1;
