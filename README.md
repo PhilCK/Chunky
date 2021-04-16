@@ -31,10 +31,10 @@ cd scripts
 
 The thirdparty is used in development and testing. It does not ship with Chunky.
 
-Library | URL                                  | Author
---------|--------------------------------------|-----------------------------
-UTest   | https://github.com/sheredom/utest.h  | https://twitter.com/sheredom
-UBench  | https://github.com/sheredom/ubench.h | https://twitter.com/sheredom
-Imgui   | https://github.com/ocornut/imgui     | https://twitter.com/ocornut
-CImgui  | https://github.com/cimgui/cimgui     | https://github.com/sonoro1234
-CImgui-sokol-starter | https://github.com/floooh/cimgui-sokol-starterkit | https://twitter.com/FlohOfWoe
+Library | URL                                  
+--------|--------------------------------------
+UTest   | https://github.com/sheredom/utest.h  
+UBench  | https://github.com/sheredom/ubench.h 
+Imgui   | https://github.com/ocornut/imgui     
+CImgui  | https://github.com/cimgui/cimgui     
+CImgui-sokol-starter | https://github.com/floooh/cimgui-sokol-starterkit
