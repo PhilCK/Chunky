@@ -7,6 +7,18 @@ handle things like multi-threading.
 The main motivation for this was to see what an interface would turn out like
 using bitmasks to identify the components for an entity or system.
 
+## Roadmap/Feedback
+
+This is for my own needs/fun, but if you have feedback on how what could be
+changed to meet your needs, feel free to raise an issue. I do this in my free
+time so its ofcourse dependent on how much time I have.
+
+**Some Unordered Pirority List**
+
+- Stablise the API / Basic design.
+- Make API safer to use more thread friendly.
+- Virutal Memory backend.
+
 ## Status
 
 Currently porting a really bad prototype I made for this accross. There are alot
