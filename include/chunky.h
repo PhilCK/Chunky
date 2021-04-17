@@ -16,7 +16,7 @@ struct chunky_ctx;
 struct chunky_recorder;
 
 #define CHUNKY_MAJOR_VER 0
-#define CHUNKY_MINOR_VER 0
+#define CHUNKY_MINOR_VER 1
 #define CHUNKY_PATCH_VER 0
 
 #define CHUNKY_MAX_COMPONENTS 64
