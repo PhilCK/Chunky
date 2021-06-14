@@ -21,12 +21,36 @@ chunky_components_create(
 
         for(int i = 0; i < desc_count; ++i)
         {
+                const struct chunky_component_desc *cd = &desc[i];
+                out_component_ids[i] = 0;
+
+                /* First search to see if this component has already been added
+                 * and use that id instead.
+                 */
+
+                for(int j = 0; j < CHUNKY_MAX_COMPONENTS; ++j) {
+                        struct chunky_component *cur = &ctx->comps[j];
+
+                        if(strcmp(cd->name, cur->name) == 0) {
+                                /* Same bytes? Same Type :/ */
+                                assert(cd->bytes == cur->bytes);
+                                out_component_ids[i] = cur->bit;
+                                break;
+                        }
+                }
+
+                if(out_component_ids[i]) {
+                        continue;
+                }
+
+                /* Now add that component
+                 */
+
                 if(ctx->comp_count >= CHUNKY_MAX_COMPONENTS) {
                         assert(!"Component limit reached, max is 64!");
                         return 0;
                 }
 
-                const struct chunky_component_desc *cd = &desc[i];
                 struct chunky_component *cd_dst = &ctx->comps[ctx->comp_count];
 
                 /* I haven't tested this, but an empty struct/class in C++ is 1

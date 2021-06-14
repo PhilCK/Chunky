@@ -2,7 +2,7 @@ mkdir bin
 
 # Utest
 
-clang \
+cc \
         -I ../include \
         -I ../external/utest.h \
         ../src/lifetime.c \
@@ -15,12 +15,14 @@ clang \
         ../test/utest_entities.c \
         ../test/utest_blocks.c \
         -std=c99 -O2 \
+        -g \
+        -O0 \
         -o \
         bin/chunky_utest
 
 # Ubench
 
-clang \
+cc \
         -I ../include \
         -I ../external/ubench.h \
         ../src/lifetime.c \

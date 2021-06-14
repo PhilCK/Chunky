@@ -30,6 +30,33 @@ UTEST_F_TEARDOWN(components) {
         ASSERT_TRUE(ch_ctx == 0);
 }
 
+UTEST_F(components, double_reg_same_comp) {
+        ASSERT_TRUE(chunky_components_count(utest_fixture->ctx) == 0);
+
+        struct chunky_component_desc desc = {
+                .name = "transform",
+                .bytes = sizeof(float) * 10
+        };
+
+        uint64_t first_id = 0;
+
+        int ok = chunky_components_create(
+                utest_fixture->ctx,
+                &desc,
+                1,
+                &first_id);
+
+        uint64_t second_id = 0;
+
+        ok = chunky_components_create(
+        utest_fixture->ctx,
+        &desc,
+        1,
+        &second_id);
+
+        ASSERT_TRUE(first_id == second_id);
+}
+
 UTEST_F(components, single_reg) {
         ASSERT_TRUE(chunky_components_count(utest_fixture->ctx) == 0);
 
@@ -115,11 +142,12 @@ UTEST_F(components, max_reg) {
         /* create some junky data
          */
 
-        const char *name = "max_reg";
+        const char name[] = "1234567890123456789012345678901234567890123456789012345678901234567890";
+        ASSERT_TRUE(strlen(name) > CHUNKY_MAX_COMPONENTS);
 
         for(int i = 0; i < CHUNKY_MAX_COMPONENTS; ++i) {
                 desc[i].bytes = i + 1;
-                desc[i].name = name;
+                desc[i].name = &name[i];
         }
 
         uint64_t ids[CHUNKY_MAX_COMPONENTS] = {0};
