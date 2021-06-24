@@ -94,12 +94,13 @@ chunky_block_entities(
 /* Internal
  */
 
-int
+struct chunky_entity_slot_data
 chunky_block_append_slot(
         struct chunky_ctx *ctx,
         uint64_t layout,
         uintptr_t entity_id)
 {
+        struct chunky_entity_slot_data sl = {};
         struct chunk_block *block = NULL;
 
         /* search for a layout with a free slot */
@@ -138,7 +139,7 @@ chunky_block_append_slot(
 
                 if(!block) {
                         assert(!"Failed to find a block");
-                        return 0;
+                        return sl;
                 }
 
                 /* Can we fit this into this chunk, right now all we assume we can fit
@@ -229,7 +230,7 @@ chunky_block_append_slot(
 
         if(!block) {
                 assert(!"Failed to setup a new block");
-                return 0;
+                return sl;
         }
 
         /* We need to save back some information to the entity so we can find
@@ -237,8 +238,8 @@ chunky_block_append_slot(
          */
 
         struct chunky_entity *ent = (struct chunky_entity*)entity_id;
-        ent->slot_idx = block->header.count;
-        ent->block = block;
+        sl.slot_index = block->header.count;
+        sl.block = block;
 
         /* We can insert the new entity into the block
          */
@@ -249,7 +250,7 @@ chunky_block_append_slot(
         ents[curr_idx] = entity_id;
         block->header.count += 1;
 
-        return 1;
+        return sl;
 }
 
 int

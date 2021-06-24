@@ -1,6 +1,9 @@
 # Build Dir
 /scripts/bin
 
+# Editor Related things
+tags
+
 # OS Files
 *.DS_Store
 

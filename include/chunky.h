@@ -59,6 +59,12 @@ chunky_entity_name_get(
         char *name,                                     /* required */
         size_t *name_len);                              /* required */
 
+uintptr_t
+chunky_entity_component_get(
+        struct chunky_ctx *ctx,                         /* required */
+        uintptr_t entity,
+        uint64_t component_type_id);
+
 /* -------------------------------------------------------------------------- */
 /* Components
  */

@@ -5,6 +5,17 @@
 
 struct entity {
         struct chunky_ctx *ctx;
+        uint64_t comp_id[2];
+};
+
+struct tform {
+        float position[3];
+        float scale[3];
+        float rotation[4];
+};
+
+struct bounds {
+        float scale[3];
 };
 
 UTEST_F_SETUP(entity) {
@@ -17,6 +28,25 @@ UTEST_F_SETUP(entity) {
 
         ASSERT_TRUE(ch_ctx != 0);
         utest_fixture->ctx = ch_ctx;
+        
+        struct chunky_component_desc desc[2] = {
+                [0] = {
+                        .name = "tform",
+                        .bytes = sizeof(struct tform),
+                },
+                [1] = {
+                        .name = "bounds",
+                        .bytes = sizeof(struct bounds),
+                }
+        };
+
+        int ok = chunky_components_create(
+                utest_fixture->ctx,
+                desc,
+                2,
+                utest_fixture->comp_id);
+
+        ASSERT_TRUE(ok != 0);
 }
 
 UTEST_F_TEARDOWN(entity) {
@@ -123,6 +153,54 @@ UTEST_F(entity, get_set_name_clipped) {
         ASSERT_TRUE(strstr(name, get_name) != NULL);
 }
 
+UTEST_F(entity, get_set_component_data) {
+        /* Create an entity 
+         */
+
+        uintptr_t ent = chunky_entity_create(
+                utest_fixture->ctx,
+                utest_fixture->comp_id[0] | utest_fixture->comp_id[1]);
+
+        /* Get the component data
+         */
+
+        uintptr_t comp_data_1 = chunky_entity_component_get(
+                utest_fixture->ctx,
+                ent,
+                utest_fixture->comp_id[0]);
+ 
+        ASSERT_TRUE(comp_data_1 > 0);
+
+        struct tform *tform_data = (struct tform*)comp_data_1;
+        tform_data->position[0] = 123.f;
+        tform_data->scale[0] = 234.f;
+        tform_data->rotation[0] = 345.f;
+
+        uintptr_t comp_data_2 = chunky_entity_component_get(
+                utest_fixture->ctx,
+                ent,
+                utest_fixture->comp_id[1]);
+
+        ASSERT_TRUE(comp_data_2 > 0);
+
+        struct bounds *bounds_data = (struct bounds*)comp_data_2;
+        bounds_data->scale[0] = 999.f;
+
+        uintptr_t comp_data_3 = chunky_entity_component_get(
+                utest_fixture->ctx,
+                ent,
+                64 /* id shouldn't exit */);
+
+        ASSERT_TRUE(comp_data_3 == 0);
+
+        /* Check against memory clobber
+         */
+
+        ASSERT_TRUE(tform_data->position[0] == 123.f);
+        ASSERT_TRUE(tform_data->scale[0] == 234.f);
+        ASSERT_TRUE(tform_data->rotation[0] = 345.f);
+}
+
 UTEST_F(entity, create_alot_of_entities) {
 
         /* Feel free to check this by increasing to check it explods
@@ -138,3 +216,4 @@ UTEST_F(entity, create_alot_of_entities) {
 
         ASSERT_TRUE(1);
 }
+

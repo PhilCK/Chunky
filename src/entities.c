@@ -45,7 +45,32 @@ chunky_entity_create(
          * Append this entity into a block ...
          */
 
-        chunky_block_append_slot(ctx, components, entity);
+        struct chunky_entity_slot_data sl = chunky_block_append_slot(
+                ctx,
+                components,
+                entity);
+
+        /* Set the components
+         */
+
+        for(int i = 0; i < CHUNKY_MAX_COMPONENTS; ++i) {
+                int comp = 1 << i;
+
+                if(!(comp & components)) {
+                        sl.components[i] = 0;
+                        continue;
+                }
+
+                /* Calculate the bytes offset
+                 */
+
+                uintptr_t byte_offset = sl.block->header.components[i];
+                byte_offset += (sl.slot_index * ctx->comps[i].bytes);
+
+                sl.components[i] = byte_offset;
+        }
+        
+        ((struct chunky_entity*)entity)->slot_data = sl;
 
         return entity;
 }
@@ -79,7 +104,10 @@ chunky_entity_destroy(
         /* We need to remove the slot from the chunk it lives in
          */
 
-        (void)chunky_block_remove_slot(ctx, e->block, e->slot_idx);
+        (void)chunky_block_remove_slot(
+                ctx,
+                e->slot_data.block,
+                e->slot_data.slot_index);
 
         return 1;
 }
@@ -131,6 +159,27 @@ chunky_entity_name_get(
         memcpy(name, ent->name, len);
 
         return 1;
+}
+
+uintptr_t
+chunky_entity_component_get(
+        struct chunky_ctx *ctx,
+        uintptr_t entity,
+        uint64_t component_type_id)
+{
+        assert(ctx && "No null ctx");
+        assert(entity && "Must be an entity");
+
+        /* Find the components */
+
+        struct chunky_entity *ent = (struct chunky_entity*)entity;
+
+        /* Get the component
+         */
+
+
+        size_t comp_idx = id2idx(component_type_id); 
+        return ent->slot_data.components[comp_idx];
 }
 
 #undef CHUNKY_ENTITY_EXISTS

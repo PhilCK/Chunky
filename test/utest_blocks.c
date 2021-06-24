@@ -245,17 +245,17 @@ UTEST_F(block, mem_corruption_test) {
 
         for(int i = 0; i < headers[0]->count; ++i) {
                 struct tform_comp tc = {
-                        .data = {1,1,1,1,1,1,1,1,1,1}
+                        .data = {i,1,1,1,1,1,1,1,1,1}
                 };
                 tform[i] = tc;
 
                 struct bounds_comp bc = {
-                        .data = {2,2,2,2,2,2}
+                        .data = {2,2,i,2,2,2}
                 };
                 bounds[i] = bc;
 
                 struct renderable_comp rc = {
-                        .data = {3,3}
+                        .data = {3,i}
                 };
                 rdr[i] = rc;
         }
@@ -272,7 +272,7 @@ UTEST_F(block, mem_corruption_test) {
         for(int i = 0; i < ENT_COUNT; ++i) {
                 ASSERT_TRUE(entities[i] == ents[i]);
 
-                ASSERT_TRUE(tform[i].data[0] == 1);
+                ASSERT_TRUE(tform[i].data[0] == i);
                 ASSERT_TRUE(tform[i].data[1] == 1);
                 ASSERT_TRUE(tform[i].data[2] == 1);
                 ASSERT_TRUE(tform[i].data[3] == 1);
@@ -285,13 +285,52 @@ UTEST_F(block, mem_corruption_test) {
 
                 ASSERT_TRUE(bounds[i].data[0] == 2);
                 ASSERT_TRUE(bounds[i].data[1] == 2);
-                ASSERT_TRUE(bounds[i].data[2] == 2);
+                ASSERT_TRUE(bounds[i].data[2] == i);
                 ASSERT_TRUE(bounds[i].data[3] == 2);
                 ASSERT_TRUE(bounds[i].data[4] == 2);
                 ASSERT_TRUE(bounds[i].data[5] == 2);
 
                 ASSERT_TRUE(rdr[i].data[0] == 3);
-                ASSERT_TRUE(rdr[i].data[1] == 3);
+                ASSERT_TRUE(rdr[i].data[1] == i);
+        }
+
+        /* Test that the component data from the entity is the same as the
+         * component data in the block
+         */
+
+        for(int i = 0; i < ENT_COUNT; ++i) {
+                uintptr_t tform_cdata = chunky_entity_component_get(
+                        utest_fixture->ctx,
+                        ents[i],
+                        utest_fixture->tform_compid);
+
+                ASSERT_TRUE(tform_cdata);
+                struct tform_comp *tform_comp = (struct tform_comp*)tform_cdata;
+                ASSERT_TRUE(tform_comp->data[0] == i);
+
+                /* -- */
+        
+                uintptr_t bounds_cdata = chunky_entity_component_get(
+                        utest_fixture->ctx,
+                        ents[i],
+                        utest_fixture->bounds_compid);
+                
+                ASSERT_TRUE(bounds_cdata);
+                struct bounds_comp *bounds_comp = (struct bounds_comp*)bounds_cdata;
+                ASSERT_TRUE(bounds_comp->data[2] == i);
+
+                /* -- */
+
+                uintptr_t rdr_cdata = chunky_entity_component_get(
+                        utest_fixture->ctx,
+                        ents[i],
+                        utest_fixture->renderable_compid);
+
+                ASSERT_TRUE(rdr_cdata);
+                struct renderable_comp * rdr_comp = (struct renderable_comp*)rdr_cdata;
+                ASSERT_TRUE(rdr_comp->data[1] == i);
+
+
         }
 
         #undef ENT_COUNT

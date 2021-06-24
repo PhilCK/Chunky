@@ -78,12 +78,17 @@ struct chunk_layout {
         uint8_t strides[CHUNKY_MAX_COMPONENTS];
 };
 
+struct chunky_entity_slot_data {
+        int slot_index;
+        struct chunk_block *block; 
+        uintptr_t components[CHUNKY_MAX_COMPONENTS];
+};
+
 struct chunky_entity {
         size_t idx;
         char name[CHUNKY_MAX_NAME_LEN];
-        uint64_t components;
-        int16_t slot_idx;
-        struct chunk_block *block;
+        uint64_t components; /* get rid of this */
+        struct chunky_entity_slot_data slot_data;
 };
 
 struct chunky_component {
@@ -110,7 +115,7 @@ struct chunky_ctx {
 /* Internal API Calls
  */
 
-int
+struct chunky_entity_slot_data
 chunky_block_append_slot(
         struct chunky_ctx *ctx,
         uint64_t layout,
