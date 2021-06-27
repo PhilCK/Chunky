@@ -1,5 +1,8 @@
 # Build Dir
-/scripts/bin
+build/
+build_*/
+b/
+b_*/
 
 # Editor Related things
 tags
