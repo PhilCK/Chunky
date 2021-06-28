@@ -30,14 +30,19 @@ thing, so very unstable atm.
 There isn't anything special going on here, you just need to compile the source
 files, with a path set to the include folder.
 
-You can use the scripts in the scripts folder like so.
+We use cmake its pretty vanilla but likely not setup in a way you can 'embed'
+into your own project, but its all pretty vanilla, just compile the files.
 
 ```bash
 git clone https://github.com/PhilCK/Chunky.git
 git submodule update --init --recursive
-cd scripts
-./win_build_and_go.bat
+cmake -B ./build
+cd build
+make # or what ever generator
 ```
+
+There is a test app `./bin/imgui` its pretty basic but does the job.
+There are also unit tests ... likely should be more than there is.
 
 ## Thirdparty
 

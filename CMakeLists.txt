@@ -115,5 +115,6 @@ else()
         add_executable(imgui ${IMGUI_FILES} test/imgui_app.c)
 endif()
 
-target_include_directories(imgui PRIVATE include)
+target_compile_definitions(imgui PRIVATE "CHUNKY_MAX_BLOCKS=8" "CHUNKY_MAX_ENTITIES=32")
+target_include_directories(imgui PRIVATE include src)
 target_link_libraries(imgui sokol)
