@@ -192,7 +192,7 @@ chunky_block_append_slot(
                         int comp_idx = i;
                         uint64_t src_bit = ctx->comps[comp_idx].bit;
 
-                        if(!(src_bit & layout)) {
+                        if(src_bit && !(src_bit & layout)) {
                                 continue;
                         }
 

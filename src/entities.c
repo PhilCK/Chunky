@@ -98,7 +98,6 @@ chunky_entity_destroy(
         /* clear data */
 
         e->idx = 0;
-        e->components = 0;
         memset(e->name, 0, sizeof(e->name));
 
         /* We need to remove the slot from the chunk it lives in

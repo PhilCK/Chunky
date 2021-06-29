@@ -87,7 +87,6 @@ struct chunky_entity_slot_data {
 struct chunky_entity {
         size_t idx;
         char name[CHUNKY_MAX_NAME_LEN];
-        uint64_t components; /* get rid of this */
         struct chunky_entity_slot_data slot_data;
 };
 
