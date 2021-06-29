@@ -14,6 +14,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Fixed
 
 - Doesn't add duplicate components anymore.
+- Bug where a new entity type gets added to the wrong chunk.
 
 ## [0.1.0] - 2021-04-17
 

@@ -18,6 +18,7 @@ time so its ofcourse dependent on how much time I have.
 - Stablise the API / Basic design.
 - Make API safer to use more thread friendly.
 - Virutal Memory backend.
+- Should we support typeless Entities?
 
 ## Status
 

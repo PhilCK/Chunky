@@ -106,7 +106,11 @@ chunky_block_append_slot(
         /* search for a layout with a free slot */
 
         for(int i = 0; i < CHUNKY_MAX_BLOCKS; ++i) {
-                if((ctx->info[i].layout & layout) != layout) {
+                if(ctx->info[i].layout != layout) {
+                        continue;
+                }
+
+                if(ctx->info[i].layout == 0) {
                         continue;
                 }
 
